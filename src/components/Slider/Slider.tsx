@@ -1,5 +1,6 @@
 import './Slider.sass';
 import { FC, useState, MouseEvent, useRef, useEffect } from 'react';
+import { config } from 'process';
 
 interface SliderProps {
   images: string[];
@@ -13,55 +14,52 @@ enum ButtonName {
 const Slider: FC<SliderProps> = ({ images }) => {
   const refItems = useRef<HTMLDivElement>(null);
 
-  const [sliderWidth, setsliderWidth] = useState<number>(0);
+  const [sliderWidth, setSliderWidth] = useState<number>(0);
   const [sliderActive, setSliderActive] = useState<number>(0);
+
+  const [pressed, setPressed] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [x, setX] = useState(0);
 
   const [offset, setOffset] = useState<number>(0);
 
-  const [mousePos, setMousePos] = useState<number>(0);
-
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    if (e.currentTarget.name === ButtonName.prev) {
-      setOffset((currentOffset) => {
-        const newOffset = currentOffset + sliderWidth;
-
-        return Math.min(newOffset, 0);
-      });
-    } else {
-      setOffset((currentOffset) => {
-        const newOffset = currentOffset - sliderWidth;
-        const maxOffset = -((images.length - 1) * sliderWidth);
-
-        return Math.max(newOffset, maxOffset);
-      });
-    }
+    // if (e.currentTarget.name === ButtonName.prev) {
+    //   setOffset((currentOffset) => {
+    //     const newOffset = currentOffset + sliderWidth;
+    //     return Math.min(newOffset, 0);
+    //   });
+    // } else {
+    //   setOffset((currentOffset) => {
+    //     const newOffset = currentOffset - sliderWidth;
+    //     const maxOffset = -((images.length - 1) * sliderWidth);
+    //     return Math.max(newOffset, maxOffset);
+    //   });
+    // }
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    setMousePos(e.pageX);
+    setStartX(e.clientX);
+    setPressed(true);
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (e.buttons === 1 && refItems.current) {
       const rect = refItems.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
+      const posX = startX - e.clientX;
 
-      console.log(offset, x, e.pageX, e.clientX);
+      console.log(startX - e.clientX, rect.x);
 
-      setOffset((currentOffset) => {
-        const newOffset = currentOffset - x;
-
-        return Math.min(newOffset, 0);
-      });
+      setOffset(Math.min(-posX, 0));
     }
   };
 
   const handleEndClick = () => {
-    setMousePos(0);
+    setPressed(false);
   };
 
   useEffect(() => {
-    refItems.current && setsliderWidth(refItems.current.offsetWidth);
+    refItems.current && setSliderWidth(refItems.current.offsetWidth);
   }, []);
 
   return (
@@ -81,9 +79,16 @@ const Slider: FC<SliderProps> = ({ images }) => {
           onMouseDown={handleMouseDown}
           onMouseUp={handleEndClick}
           onMouseMove={handleMouseMove}>
-          {images.map((item) => (
-            <div className={`item item__${item}`} key={item}>
-              {item}
+          {images.map((item, imdex) => (
+            <div
+              key={item}
+              className={`slider__item slider__item__${imdex + 1}`}>
+              <img
+                className="slider__image"
+                src={`/${item}`}
+                alt={item.replace(/\D+/g, '')}
+                draggable={false}
+              />
             </div>
           ))}
         </div>
