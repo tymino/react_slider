@@ -6,31 +6,53 @@ interface SliderProps {
 }
 
 const Slider: FC<SliderProps> = ({ images }) => {
-  const [item] = useState<number[]>([1, 2, 3]);
+  const STEP_SLIDE = 50;
+  const WIDTH_WINDOW = 450;
 
-  const [offset, setOffset] = useState(0);
+  const [item] = useState<number[]>([1, 2, 3]);
+  const [mousePos, setMousePos] = useState<number>(0);
+
+  const [offset, setOffset] = useState<number>(0);
 
   const setStyleWidth = () => {
     return {
-      width: '450px',
+      width: `${WIDTH_WINDOW}px`,
     };
   };
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     if (e.currentTarget.name === 'prev') {
       setOffset((currentOffset) => {
-        const newOffset = currentOffset + 450;
+        const newOffset = currentOffset + WIDTH_WINDOW;
 
         return Math.min(newOffset, 0);
       });
     } else {
       setOffset((currentOffset) => {
-        const newOffset = currentOffset - 450;
-        const maxOffset = -((item.length - 1) * 450);
+        const newOffset = currentOffset - WIDTH_WINDOW;
+        const maxOffset = -((item.length - 1) * WIDTH_WINDOW);
 
         return Math.max(newOffset, maxOffset);
       });
     }
+  };
+
+  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+    setMousePos(e.pageX);
+  };
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.buttons === 1) {
+      setOffset((currentOffset) => {
+        const newOffset = currentOffset + WIDTH_WINDOW;
+
+        return Math.min(newOffset, 0);
+      });
+    }
+  };
+
+  const handleEndClick = () => {
+    setMousePos(0);
   };
 
   return (
@@ -45,7 +67,10 @@ const Slider: FC<SliderProps> = ({ images }) => {
       <div className="slider__window">
         <div
           className="slider__items"
-          style={{ transform: `translateX(${offset}px)` }}>
+          style={{ transform: `translateX(${offset}px)` }}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleEndClick}
+          onMouseMove={handleMouseMove}>
           {item.map((item) => (
             <div className={`item item__${item}`} key={item}>
               {item}
