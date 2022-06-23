@@ -1,5 +1,5 @@
 import './Slider.sass';
-import { FC, useState, MouseEvent } from 'react';
+import { FC, useState, MouseEvent, useRef } from 'react';
 
 interface SliderProps {
   images: string[];
@@ -8,6 +8,8 @@ interface SliderProps {
 const Slider: FC<SliderProps> = ({ images }) => {
   const STEP_SLIDE = 50;
   const WIDTH_WINDOW = 450;
+
+  const refItems = useRef<any>();
 
   const [item] = useState<number[]>([1, 2, 3]);
   const [mousePos, setMousePos] = useState<number>(0);
@@ -43,8 +45,13 @@ const Slider: FC<SliderProps> = ({ images }) => {
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (e.buttons === 1) {
+      const rect = refItems.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+
+      console.log(offset, x, e.pageX, e.clientX);
+
       setOffset((currentOffset) => {
-        const newOffset = currentOffset + WIDTH_WINDOW;
+        const newOffset = currentOffset + e.pageX;
 
         return Math.min(newOffset, 0);
       });
@@ -68,6 +75,7 @@ const Slider: FC<SliderProps> = ({ images }) => {
         <div
           className="slider__items"
           style={{ transform: `translateX(${offset}px)` }}
+          ref={refItems}
           onMouseDown={handleMouseDown}
           onMouseUp={handleEndClick}
           onMouseMove={handleMouseMove}>
