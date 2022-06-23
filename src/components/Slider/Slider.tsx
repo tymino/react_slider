@@ -1,38 +1,36 @@
 import './Slider.sass';
-import { FC, useState, MouseEvent, useRef } from 'react';
+import { FC, useState, MouseEvent, useRef, useEffect } from 'react';
 
 interface SliderProps {
   images: string[];
 }
 
+enum ButtonName {
+  prev = 'prev',
+  next = 'next',
+}
+
 const Slider: FC<SliderProps> = ({ images }) => {
-  const STEP_SLIDE = 50;
-  const WIDTH_WINDOW = 450;
+  const refItems = useRef<HTMLDivElement>(null);
 
-  const refItems = useRef<any>();
-
-  const [item] = useState<number[]>([1, 2, 3]);
-  const [mousePos, setMousePos] = useState<number>(0);
+  const [sliderWidth, setsliderWidth] = useState<number>(0);
+  const [sliderActive, setSliderActive] = useState<number>(0);
 
   const [offset, setOffset] = useState<number>(0);
 
-  const setStyleWidth = () => {
-    return {
-      width: `${WIDTH_WINDOW}px`,
-    };
-  };
+  const [mousePos, setMousePos] = useState<number>(0);
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    if (e.currentTarget.name === 'prev') {
+    if (e.currentTarget.name === ButtonName.prev) {
       setOffset((currentOffset) => {
-        const newOffset = currentOffset + WIDTH_WINDOW;
+        const newOffset = currentOffset + sliderWidth;
 
         return Math.min(newOffset, 0);
       });
     } else {
       setOffset((currentOffset) => {
-        const newOffset = currentOffset - WIDTH_WINDOW;
-        const maxOffset = -((item.length - 1) * WIDTH_WINDOW);
+        const newOffset = currentOffset - sliderWidth;
+        const maxOffset = -((images.length - 1) * sliderWidth);
 
         return Math.max(newOffset, maxOffset);
       });
@@ -44,14 +42,14 @@ const Slider: FC<SliderProps> = ({ images }) => {
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.buttons === 1) {
+    if (e.buttons === 1 && refItems.current) {
       const rect = refItems.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
 
       console.log(offset, x, e.pageX, e.clientX);
 
       setOffset((currentOffset) => {
-        const newOffset = currentOffset + e.pageX;
+        const newOffset = currentOffset - x;
 
         return Math.min(newOffset, 0);
       });
@@ -62,8 +60,12 @@ const Slider: FC<SliderProps> = ({ images }) => {
     setMousePos(0);
   };
 
+  useEffect(() => {
+    refItems.current && setsliderWidth(refItems.current.offsetWidth);
+  }, []);
+
   return (
-    <div className="slider__container" style={setStyleWidth()}>
+    <div className="slider__container">
       <button
         className="slider__button slider__button--prev"
         name="prev"
@@ -79,7 +81,7 @@ const Slider: FC<SliderProps> = ({ images }) => {
           onMouseDown={handleMouseDown}
           onMouseUp={handleEndClick}
           onMouseMove={handleMouseMove}>
-          {item.map((item) => (
+          {images.map((item) => (
             <div className={`item item__${item}`} key={item}>
               {item}
             </div>
