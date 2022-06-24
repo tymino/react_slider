@@ -1,8 +1,12 @@
 import './Slider.sass';
 import { FC, useState, MouseEvent, useRef, useEffect } from 'react';
-import { config } from 'process';
 
-interface SliderProps {
+enum DirectionName {
+  back = 'back',
+  next = 'next',
+}
+
+interface ISliderProps {
   images: string[];
 }
 
@@ -11,61 +15,68 @@ interface IStartPosition {
   slider: number;
 }
 
-enum ButtonName {
-  prev = 'prev',
-  next = 'next',
-}
+// type DirectionState = DirectionName | null;
 
-const Slider: FC<SliderProps> = ({ images }) => {
+const Slider: FC<ISliderProps> = ({ images }) => {
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
   const [sliderActive, setSliderActive] = useState<number>(0);
+  const [sliderOffset, setSliderOffset] = useState<number>(0);
 
-  const [mousePressed, setMousePressed] = useState<boolean>(false);
+  const [directionMove, setDirectionMove] = useState<DirectionName>(
+    DirectionName.next,
+  );
+
   const [startPosX, setStartPosX] = useState<IStartPosition>({
     mouse: 0,
     slider: 0,
   });
 
-  const [offsetSlider, setOffsetSlider] = useState<number>(0);
-
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    // if (e.currentTarget.name === ButtonName.prev) {
-    //   setOffset((currentOffset) => {
-    //     const newOffset = currentOffset + sliderWidth;
-    //     return Math.min(newOffset, 0);
-    //   });
-    // } else {
-    //   setOffset((currentOffset) => {
-    //     const newOffset = currentOffset - sliderWidth;
-    //     const maxOffset = -((images.length - 1) * sliderWidth);
-    //     return Math.max(newOffset, maxOffset);
-    //   });
-    // }
+    if (e.currentTarget.name === DirectionName.back) {
+      setSliderOffset((currentOffset) => {
+        const newOffset = currentOffset + sliderWidth;
+        return Math.min(newOffset, 0);
+      });
+    } else {
+      setSliderOffset((currentOffset) => {
+        const newOffset = currentOffset - sliderWidth;
+        const maxOffset = -((images.length - 1) * sliderWidth);
+        return Math.max(newOffset, maxOffset);
+      });
+    }
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    setMousePressed(true);
     setStartPosX({
       mouse: e.clientX,
-      slider: offsetSlider,
+      slider: sliderOffset,
     });
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (e.buttons === 1 && refItems.current) {
-      const rect = refItems.current.getBoundingClientRect();
+      const maxOffset = -((images.length - 1) * sliderWidth);
       const offsetMouseX = startPosX.slider - (startPosX.mouse - e.clientX);
 
-      console.log(offsetMouseX, rect.x);
+      setDirectionMove(() =>
+        offsetMouseX <= 0 ? DirectionName.next : DirectionName.back,
+      );
 
-      setOffsetSlider(Math.min(offsetMouseX, 0));
+      setSliderOffset(() =>
+        offsetMouseX < maxOffset
+          ? Math.max(offsetMouseX, maxOffset)
+          : Math.min(offsetMouseX, 0),
+      );
     }
   };
 
   const handleEndClick = () => {
-    setMousePressed(false);
+    const offsetMouseMove = sliderOffset % sliderWidth;
+    const actualSliderNumber = sliderOffset / sliderWidth;
+
+    // console.log(Math.abs(Math.floor(actualSliderNumber)), sliderWidth);
   };
 
   useEffect(() => {
@@ -76,7 +87,7 @@ const Slider: FC<SliderProps> = ({ images }) => {
     <div className="slider__container">
       <button
         className="slider__button slider__button--prev"
-        name="prev"
+        name={DirectionName.back}
         onClick={handleClick}>
         {'<'}
       </button>
@@ -84,7 +95,7 @@ const Slider: FC<SliderProps> = ({ images }) => {
       <div className="slider__window">
         <div
           className="slider__items"
-          style={{ transform: `translateX(${offsetSlider}px)` }}
+          style={{ transform: `translateX(${sliderOffset}px)` }}
           ref={refItems}
           onMouseDown={handleMouseDown}
           onMouseUp={handleEndClick}
@@ -106,7 +117,7 @@ const Slider: FC<SliderProps> = ({ images }) => {
 
       <button
         className="slider__button slider__button--next"
-        name="next"
+        name={DirectionName.next}
         onClick={handleClick}>
         {'>'}
       </button>
