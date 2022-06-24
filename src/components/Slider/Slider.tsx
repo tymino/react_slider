@@ -6,6 +6,11 @@ interface SliderProps {
   images: string[];
 }
 
+interface IStartPosition {
+  mouse: number;
+  slider: number;
+}
+
 enum ButtonName {
   prev = 'prev',
   next = 'next',
@@ -17,11 +22,13 @@ const Slider: FC<SliderProps> = ({ images }) => {
   const [sliderWidth, setSliderWidth] = useState<number>(0);
   const [sliderActive, setSliderActive] = useState<number>(0);
 
-  const [pressed, setPressed] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [x, setX] = useState(0);
+  const [mousePressed, setMousePressed] = useState<boolean>(false);
+  const [startPosX, setStartPosX] = useState<IStartPosition>({
+    mouse: 0,
+    slider: 0,
+  });
 
-  const [offset, setOffset] = useState<number>(0);
+  const [offsetSlider, setOffsetSlider] = useState<number>(0);
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     // if (e.currentTarget.name === ButtonName.prev) {
@@ -39,23 +46,26 @@ const Slider: FC<SliderProps> = ({ images }) => {
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    setStartX(e.clientX);
-    setPressed(true);
+    setMousePressed(true);
+    setStartPosX({
+      mouse: e.clientX,
+      slider: offsetSlider,
+    });
   };
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (e.buttons === 1 && refItems.current) {
       const rect = refItems.current.getBoundingClientRect();
-      const posX = startX - e.clientX;
+      const offsetMouseX = startPosX.slider - (startPosX.mouse - e.clientX);
 
-      console.log(startX - e.clientX, rect.x);
+      console.log(offsetMouseX, rect.x);
 
-      setOffset(Math.min(-posX, 0));
+      setOffsetSlider(Math.min(offsetMouseX, 0));
     }
   };
 
   const handleEndClick = () => {
-    setPressed(false);
+    setMousePressed(false);
   };
 
   useEffect(() => {
@@ -74,7 +84,7 @@ const Slider: FC<SliderProps> = ({ images }) => {
       <div className="slider__window">
         <div
           className="slider__items"
-          style={{ transform: `translateX(${offset}px)` }}
+          style={{ transform: `translateX(${offsetSlider}px)` }}
           ref={refItems}
           onMouseDown={handleMouseDown}
           onMouseUp={handleEndClick}
