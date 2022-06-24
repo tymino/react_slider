@@ -15,14 +15,13 @@ interface IStartPosition {
   slider: number;
 }
 
-// type DirectionState = DirectionName | null;
-
 const Slider: FC<ISliderProps> = ({ images }) => {
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
   const [sliderActive, setSliderActive] = useState<number>(0);
   const [sliderOffset, setSliderOffset] = useState<number>(0);
+  const [sliderMaxOffset, setSliderMaxOffset] = useState<number>(0);
 
   const [directionMove, setDirectionMove] = useState<DirectionName>(
     DirectionName.next,
@@ -34,18 +33,13 @@ const Slider: FC<ISliderProps> = ({ images }) => {
   });
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    if (e.currentTarget.name === DirectionName.back) {
-      setSliderOffset((currentOffset) => {
-        const newOffset = currentOffset + sliderWidth;
-        return Math.min(newOffset, 0);
-      });
-    } else {
-      setSliderOffset((currentOffset) => {
-        const newOffset = currentOffset - sliderWidth;
-        const maxOffset = -((images.length - 1) * sliderWidth);
-        return Math.max(newOffset, maxOffset);
-      });
-    }
+    const targetName = e.currentTarget.name;
+
+    setSliderOffset((currentOffset) =>
+      targetName === DirectionName.next
+        ? Math.max(currentOffset - sliderWidth, sliderMaxOffset)
+        : Math.min(currentOffset + sliderWidth, 0),
+    );
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
@@ -57,31 +51,48 @@ const Slider: FC<ISliderProps> = ({ images }) => {
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (e.buttons === 1 && refItems.current) {
-      const maxOffset = -((images.length - 1) * sliderWidth);
-      const offsetMouseX = startPosX.slider - (startPosX.mouse - e.clientX);
+      const offsetMouseX = startPosX.mouse - e.clientX;
+      const offsetSliderX = startPosX.slider - offsetMouseX;
 
       setDirectionMove(() =>
-        offsetMouseX <= 0 ? DirectionName.next : DirectionName.back,
+        startPosX.mouse - e.clientX >= 0
+          ? DirectionName.next
+          : DirectionName.back,
       );
 
       setSliderOffset(() =>
-        offsetMouseX < maxOffset
-          ? Math.max(offsetMouseX, maxOffset)
-          : Math.min(offsetMouseX, 0),
+        offsetSliderX < sliderMaxOffset
+          ? Math.max(offsetSliderX, sliderMaxOffset)
+          : Math.min(offsetSliderX, 0),
       );
     }
   };
 
   const handleEndClick = () => {
     const offsetMouseMove = sliderOffset % sliderWidth;
-    const actualSliderNumber = sliderOffset / sliderWidth;
+    const restOffset = sliderWidth + offsetMouseMove;
 
-    // console.log(Math.abs(Math.floor(actualSliderNumber)), sliderWidth);
+    switch (directionMove) {
+      case DirectionName.next:
+        setSliderOffset((currentOffset) => currentOffset - restOffset);
+        break;
+
+      case DirectionName.back:
+        setSliderOffset((currentOffset) => currentOffset + restOffset);
+        break;
+
+      default:
+        break;
+    }
   };
 
   useEffect(() => {
-    refItems.current && setSliderWidth(refItems.current.offsetWidth);
-  }, []);
+    if (refItems.current) {
+      const width = refItems.current.offsetWidth;
+      setSliderWidth(width);
+      setSliderMaxOffset(-((images.length - 1) * width));
+    }
+  }, [images]);
 
   return (
     <div className="slider__container">
