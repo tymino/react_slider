@@ -19,7 +19,7 @@ const Slider: FC<ISliderProps> = ({ images }) => {
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
-  const [sliderActive, setSliderActive] = useState<number>(0);
+  // const [sliderActive, setSliderActive] = useState<number>(0);
   const [sliderOffset, setSliderOffset] = useState<number>(0);
   const [sliderMaxOffset, setSliderMaxOffset] = useState<number>(0);
 
@@ -70,20 +70,18 @@ const Slider: FC<ISliderProps> = ({ images }) => {
 
   const handleEndClick = () => {
     const offsetMouseMove = sliderOffset % sliderWidth;
-    const restOffset = sliderWidth + offsetMouseMove;
 
-    switch (directionMove) {
-      case DirectionName.next:
-        setSliderOffset((currentOffset) => currentOffset - restOffset);
-        break;
+    // console.log(offsetMouseMove);
 
-      case DirectionName.back:
-        setSliderOffset((currentOffset) => currentOffset + restOffset);
-        break;
-
-      default:
-        break;
-    }
+    setSliderOffset((currentOffset) => {
+      if (directionMove === DirectionName.next) {
+        const restOffset = sliderWidth + offsetMouseMove;
+        return Math.max(currentOffset - restOffset, sliderMaxOffset);
+      } else {
+        const restOffset = sliderWidth - (sliderWidth + offsetMouseMove);
+        return Math.min(currentOffset + restOffset, 0);
+      }
+    });
   };
 
   useEffect(() => {
