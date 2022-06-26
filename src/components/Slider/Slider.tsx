@@ -8,6 +8,7 @@ enum DirectionName {
 
 interface ISliderProps {
   images: string[];
+  activeImage: number;
 }
 
 interface IStartPosition {
@@ -15,11 +16,11 @@ interface IStartPosition {
   slider: number;
 }
 
-const Slider: FC<ISliderProps> = ({ images }) => {
+const Slider: FC<ISliderProps> = ({ images, activeImage = 0 }) => {
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
-  // const [sliderActive, setSliderActive] = useState<number>(0);
+  const [sliderActive, setSliderActive] = useState<number>(activeImage);
   const [sliderOffset, setSliderOffset] = useState<number>(0);
   const [sliderMaxOffset, setSliderMaxOffset] = useState<number>(0);
 
@@ -71,8 +72,6 @@ const Slider: FC<ISliderProps> = ({ images }) => {
   const handleEndClick = () => {
     const offsetMouseMove = sliderOffset % sliderWidth;
 
-    // console.log(offsetMouseMove);
-
     setSliderOffset((currentOffset) => {
       if (directionMove === DirectionName.next) {
         const restOffset = sliderWidth + offsetMouseMove;
@@ -89,11 +88,16 @@ const Slider: FC<ISliderProps> = ({ images }) => {
       const width = refItems.current.offsetWidth;
       setSliderWidth(width);
       setSliderMaxOffset(-((images.length - 1) * width));
+      setSliderOffset(-(width * activeImage));
     }
-  }, [images]);
+  }, [activeImage, images]);
 
   return (
-    <div className="slider__container">
+    <div
+      className="slider__container"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleEndClick}
+      onMouseMove={handleMouseMove}>
       <button
         className="slider__button slider__button--prev"
         name={DirectionName.back}
@@ -105,15 +109,14 @@ const Slider: FC<ISliderProps> = ({ images }) => {
         <div
           className="slider__items"
           style={{ transform: `translateX(${sliderOffset}px)` }}
-          ref={refItems}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleEndClick}
-          onMouseMove={handleMouseMove}>
+          ref={refItems}>
           {images.map((item, imdex) => (
             <div
               key={item}
               className={`slider__item slider__item__${imdex + 1}`}>
               <img
+                width={100}
+                height="auto"
                 className="slider__image"
                 src={`/${item}`}
                 alt={item.replace(/\D+/g, '')}
