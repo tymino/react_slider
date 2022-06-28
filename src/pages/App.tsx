@@ -41,7 +41,11 @@ const App = () => {
 
       {isOpenSlider && (
         <div className="app__slider">
-          <Slider images={images} activeImage={clikedImage} />
+          <Slider
+            images={images}
+            activeImage={clikedImage}
+            handleCloseSlider={setIsOpenSlider}
+          />
         </div>
       )}
     </div>

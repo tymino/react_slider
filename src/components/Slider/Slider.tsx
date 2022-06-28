@@ -1,4 +1,5 @@
 import './Slider.sass';
+import { ReactComponent as IconClose } from './icon/close.svg';
 import { FC, useState, MouseEvent, useRef, useEffect } from 'react';
 
 enum DirectionName {
@@ -9,6 +10,7 @@ enum DirectionName {
 interface ISliderProps {
   images: string[];
   activeImage: number;
+  handleCloseSlider: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface IStartPosition {
@@ -16,7 +18,11 @@ interface IStartPosition {
   slider: number;
 }
 
-const Slider: FC<ISliderProps> = ({ images, activeImage = 0 }) => {
+const Slider: FC<ISliderProps> = ({
+  images,
+  activeImage = 0,
+  handleCloseSlider,
+}) => {
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
@@ -83,6 +89,10 @@ const Slider: FC<ISliderProps> = ({ images, activeImage = 0 }) => {
     });
   };
 
+  const handleCloseButton = () => {
+    handleCloseSlider(false);
+  };
+
   useEffect(() => {
     if (refItems.current) {
       const width = refItems.current.offsetWidth;
@@ -98,6 +108,7 @@ const Slider: FC<ISliderProps> = ({ images, activeImage = 0 }) => {
       onMouseDown={handleMouseDown}
       onMouseUp={handleEndClick}
       onMouseMove={handleMouseMove}>
+      <IconClose className="slider__close" onClick={handleCloseButton} />
       <button
         className="slider__button slider__button--prev"
         name={DirectionName.back}
