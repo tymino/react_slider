@@ -26,7 +26,7 @@ const Slider: FC<ISliderProps> = ({
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
-  const [sliderActive, setSliderActive] = useState<number>(activeImage);
+  // const [sliderActive, setSliderActive] = useState<number>(activeImage);
   const [sliderOffset, setSliderOffset] = useState<number>(0);
   const [sliderMaxOffset, setSliderMaxOffset] = useState<number>(0);
 
@@ -126,7 +126,7 @@ const Slider: FC<ISliderProps> = ({
               key={item}
               className={`slider__item slider__item__${imdex + 1}`}>
               <img
-                width={100}
+                width={sliderWidth * 0.5}
                 height="auto"
                 className="slider__image"
                 src={`/${item}`}
