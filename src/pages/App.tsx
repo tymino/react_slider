@@ -1,6 +1,6 @@
 import './App.sass';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Slider } from '../components';
 
 const App = () => {
@@ -21,6 +21,10 @@ const App = () => {
     setClickedImage(imageIndex);
     setIsOpenSlider(true);
   };
+
+  // useEffect(() => {
+  //   window.addEventListener('resize', () => console.log('resize'));
+  // }, []);
 
   return (
     <div className="app">

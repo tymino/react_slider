@@ -1,5 +1,6 @@
 import './Slider.sass';
 import { ReactComponent as IconClose } from './icon/close.svg';
+import { ReactComponent as IconArrow } from './icon/arrow.svg';
 import { FC, useState, MouseEvent, useRef, useEffect, TouchEvent } from 'react';
 
 enum DirectionName {
@@ -115,20 +116,26 @@ const Slider: FC<ISliderProps> = ({
   };
 
   useEffect(() => {
-    if (refItems.current) {
-      const width = refItems.current.offsetWidth;
-      const height = refItems.current.offsetHeight;
+    const resizeWidth = () => {
+      if (refItems.current) {
+        const width = refItems.current.offsetWidth;
+        const height = refItems.current.offsetHeight;
 
-      if (height < width) {
-        setImageWidth(height * 0.9);
-      } else {
-        setImageWidth(width * 0.8);
+        if (height < width * 0.9) {
+          setImageWidth(height * 0.9);
+        } else {
+          setImageWidth(width * 0.8);
+        }
+
+        setSliderWidth(width);
+        setSliderMaxOffset(-((images.length - 1) * width));
+        setSliderOffset(-(width * activeImage));
       }
+    };
 
-      setSliderWidth(width);
-      setSliderMaxOffset(-((images.length - 1) * width));
-      setSliderOffset(-(width * activeImage));
-    }
+    resizeWidth();
+
+    window.addEventListener('resize', resizeWidth);
   }, [activeImage, images]);
 
   return (
@@ -145,7 +152,7 @@ const Slider: FC<ISliderProps> = ({
         className="slider__button slider__button--prev"
         name={DirectionName.back}
         onClick={handleClick}>
-        {'<'}
+        <IconArrow width={60} height={60} />
       </button>
 
       <div className="slider__window">
