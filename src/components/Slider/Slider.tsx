@@ -1,10 +1,17 @@
 import './Slider.sass';
 import { ReactComponent as IconClose } from './icon/close.svg';
-import { FC, useState, MouseEvent, useRef, useEffect } from 'react';
+import { FC, useState, MouseEvent, useRef, useEffect, TouchEvent } from 'react';
 
 enum DirectionName {
   back = 'back',
   next = 'next',
+}
+
+enum EventTypeName {
+  tStart = 'touchstart',
+  tMove = 'touchmove',
+  mStart = 'mousedown',
+  mMove = 'mousemove',
 }
 
 interface ISliderProps {
@@ -18,6 +25,8 @@ interface IStartPosition {
   slider: number;
 }
 
+type IEventMouseTouch = MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>;
+
 const Slider: FC<ISliderProps> = ({
   images,
   activeImage = 0,
@@ -26,9 +35,9 @@ const Slider: FC<ISliderProps> = ({
   const refItems = useRef<HTMLDivElement>(null);
 
   const [sliderWidth, setSliderWidth] = useState<number>(0);
-  // const [sliderActive, setSliderActive] = useState<number>(activeImage);
   const [sliderOffset, setSliderOffset] = useState<number>(0);
   const [sliderMaxOffset, setSliderMaxOffset] = useState<number>(0);
+  const [imageWidth, setImageWidth] = useState<number>(0);
 
   const [directionMove, setDirectionMove] = useState<DirectionName>(
     DirectionName.next,
@@ -49,29 +58,41 @@ const Slider: FC<ISliderProps> = ({
     );
   };
 
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = (event: any) => {
+    const startCoord =
+      event.type === EventTypeName.tStart
+        ? event.targetTouches[0].clientX
+        : event.clientX;
+
     setStartPosX({
-      mouse: e.clientX,
+      mouse: startCoord,
       slider: sliderOffset,
     });
   };
 
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.buttons === 1 && refItems.current) {
-      const offsetMouseX = startPosX.mouse - e.clientX;
+  const handleMouseMove = (event: any) => {
+    if (refItems.current) {
+      const moveCoord =
+        event.type === EventTypeName.tMove
+          ? event.targetTouches[0].clientX
+          : event.clientX;
+
+      const offsetMouseX = startPosX.mouse - moveCoord;
       const offsetSliderX = startPosX.slider - offsetMouseX;
 
-      setDirectionMove(() =>
-        startPosX.mouse - e.clientX >= 0
-          ? DirectionName.next
-          : DirectionName.back,
-      );
+      if (event.buttons === 1 || event.type === EventTypeName.tMove) {
+        setDirectionMove(() =>
+          startPosX.mouse - moveCoord >= 0
+            ? DirectionName.next
+            : DirectionName.back,
+        );
 
-      setSliderOffset(() =>
-        offsetSliderX < sliderMaxOffset
-          ? Math.max(offsetSliderX, sliderMaxOffset)
-          : Math.min(offsetSliderX, 0),
-      );
+        setSliderOffset(() =>
+          offsetSliderX < sliderMaxOffset
+            ? Math.max(offsetSliderX, sliderMaxOffset)
+            : Math.min(offsetSliderX, 0),
+        );
+      }
     }
   };
 
@@ -96,6 +117,14 @@ const Slider: FC<ISliderProps> = ({
   useEffect(() => {
     if (refItems.current) {
       const width = refItems.current.offsetWidth;
+      const height = refItems.current.offsetHeight;
+
+      if (height < width) {
+        setImageWidth(height * 0.9);
+      } else {
+        setImageWidth(width * 0.8);
+      }
+
       setSliderWidth(width);
       setSliderMaxOffset(-((images.length - 1) * width));
       setSliderOffset(-(width * activeImage));
@@ -107,7 +136,10 @@ const Slider: FC<ISliderProps> = ({
       className="slider__container"
       onMouseDown={handleMouseDown}
       onMouseUp={handleEndClick}
-      onMouseMove={handleMouseMove}>
+      onMouseMove={handleMouseMove}
+      onTouchStart={handleMouseDown}
+      onTouchEnd={handleEndClick}
+      onTouchMove={handleMouseMove}>
       <IconClose className="slider__close" onClick={handleCloseButton} />
       <button
         className="slider__button slider__button--prev"
@@ -126,7 +158,7 @@ const Slider: FC<ISliderProps> = ({
               key={item}
               className={`slider__item slider__item__${imdex + 1}`}>
               <img
-                width={sliderWidth * 0.5}
+                width={imageWidth}
                 height="auto"
                 className="slider__image"
                 src={`/${item}`}
