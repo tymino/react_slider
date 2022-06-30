@@ -25,12 +25,27 @@
 
   &__button
     position: absolute
-    padding: 0px 4px
+    display: flex
+    margin: 0 6px
+    border: none
+    border-radius: 50%
+    background: none
     font-size: 1.4rem
+    transform: rotate(-180deg)
     z-index: 10
 
     &--next
       right: 0
+      transform: rotate(0deg)
+
+    & > svg
+      width: 32px
+      height: 32px
+      fill: #fff
+      border-radius: 50%
+
+      &:hover
+        fill: #dadada
   
   &__window
     width: 100%

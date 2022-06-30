@@ -6,6 +6,7 @@ import { FC, useState, MouseEvent, useRef, useEffect, TouchEvent } from 'react';
 enum DirectionName {
   back = 'back',
   next = 'next',
+  null = '',
 }
 
 enum EventTypeName {
@@ -13,6 +14,7 @@ enum EventTypeName {
   tMove = 'touchmove',
   mStart = 'mousedown',
   mMove = 'mousemove',
+  mUp = 'mouseup',
 }
 
 interface ISliderProps {
@@ -41,7 +43,7 @@ const Slider: FC<ISliderProps> = ({
   const [imageWidth, setImageWidth] = useState<number>(0);
 
   const [directionMove, setDirectionMove] = useState<DirectionName>(
-    DirectionName.next,
+    DirectionName.null,
   );
 
   const [startPosX, setStartPosX] = useState<IStartPosition>({
@@ -49,7 +51,7 @@ const Slider: FC<ISliderProps> = ({
     slider: 0,
   });
 
-  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleButtonClick = (e: MouseEvent<HTMLButtonElement>) => {
     const targetName = e.currentTarget.name;
 
     setSliderOffset((currentOffset) =>
@@ -97,23 +99,32 @@ const Slider: FC<ISliderProps> = ({
     }
   };
 
-  const handleEndClick = () => {
+  const handleEndClick = (event: any) => {
+    event.stopPropagation();
     const offsetMouseMove = sliderOffset % sliderWidth;
 
     setSliderOffset((currentOffset) => {
-      if (directionMove === DirectionName.next) {
-        const restOffset = sliderWidth + offsetMouseMove;
-        return Math.max(currentOffset - restOffset, sliderMaxOffset);
-      } else {
-        const restOffset = sliderWidth - (sliderWidth + offsetMouseMove);
-        return Math.min(currentOffset + restOffset, 0);
+      switch (directionMove) {
+        case DirectionName.next:
+          return Math.max(
+            currentOffset - (sliderWidth + offsetMouseMove),
+            sliderMaxOffset,
+          );
+
+        case DirectionName.back:
+          return Math.min(
+            currentOffset + (sliderWidth - (sliderWidth + offsetMouseMove)),
+            0,
+          );
+
+        default:
+          return currentOffset;
       }
     });
+    setDirectionMove(DirectionName.null);
   };
 
-  const handleCloseButton = () => {
-    handleCloseSlider(false);
-  };
+  const handleCloseButton = () => handleCloseSlider(false);
 
   useEffect(() => {
     const resizeWidth = () => {
@@ -136,6 +147,8 @@ const Slider: FC<ISliderProps> = ({
     resizeWidth();
 
     window.addEventListener('resize', resizeWidth);
+
+    return () => window.removeEventListener('resize', resizeWidth);
   }, [activeImage, images]);
 
   return (
@@ -151,8 +164,8 @@ const Slider: FC<ISliderProps> = ({
       <button
         className="slider__button slider__button--prev"
         name={DirectionName.back}
-        onClick={handleClick}>
-        <IconArrow width={60} height={60} />
+        onClick={handleButtonClick}>
+        <IconArrow />
       </button>
 
       <div className="slider__window">
@@ -180,8 +193,8 @@ const Slider: FC<ISliderProps> = ({
       <button
         className="slider__button slider__button--next"
         name={DirectionName.next}
-        onClick={handleClick}>
-        {'>'}
+        onClick={handleButtonClick}>
+        <IconArrow />
       </button>
     </div>
   );

@@ -22,10 +22,6 @@ const App = () => {
     setIsOpenSlider(true);
   };
 
-  // useEffect(() => {
-  //   window.addEventListener('resize', () => console.log('resize'));
-  // }, []);
-
   return (
     <div className="app">
       <div className="app__images">
