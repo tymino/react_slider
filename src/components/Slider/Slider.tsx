@@ -1,7 +1,7 @@
 import './Slider.sass';
 import { ReactComponent as IconClose } from './icon/close.svg';
 import { ReactComponent as IconArrow } from './icon/arrow.svg';
-import { FC, useState, MouseEvent, useRef, useEffect, TouchEvent } from 'react';
+import { FC, useState, MouseEvent, useRef, useEffect } from 'react';
 
 enum DirectionName {
   back = 'back',
@@ -28,7 +28,7 @@ interface IStartPosition {
   slider: number;
 }
 
-type IEventMouseTouch = MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>;
+// type IEventMouseTouch = MouseEvent<HTMLDivElement> | TouchEvent<HTMLDivElement>;
 
 const Slider: FC<ISliderProps> = ({
   images,

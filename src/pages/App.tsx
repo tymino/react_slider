@@ -1,6 +1,6 @@
 import './App.sass';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Slider } from '../components';
 
 const App = () => {
