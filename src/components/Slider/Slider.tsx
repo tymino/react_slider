@@ -124,6 +124,8 @@ const Slider: FC<ISliderProps> = ({
     setDirectionMove(DirectionName.null);
   };
 
+  console.log();
+
   const handleCloseButton = () => handleCloseSlider(false);
 
   useEffect(() => {
@@ -164,7 +166,16 @@ const Slider: FC<ISliderProps> = ({
       <button
         className="slider__button slider__button--prev"
         name={DirectionName.back}
-        onClick={handleButtonClick}>
+        onClick={handleButtonClick}
+        disabled={sliderOffset === 0}>
+        <IconArrow />
+      </button>
+
+      <button
+        className="slider__button slider__button--next"
+        name={DirectionName.next}
+        onClick={handleButtonClick}
+        disabled={sliderOffset === -((images.length - 1) * sliderWidth)}>
         <IconArrow />
       </button>
 
@@ -193,13 +204,6 @@ const Slider: FC<ISliderProps> = ({
           ))}
         </div>
       </div>
-
-      <button
-        className="slider__button slider__button--next"
-        name={DirectionName.next}
-        onClick={handleButtonClick}>
-        <IconArrow />
-      </button>
     </div>
   );
 };

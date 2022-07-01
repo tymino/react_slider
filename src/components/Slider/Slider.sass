@@ -16,6 +16,7 @@
     height: 60px
     fill: #fff
     z-index: 10
+    cursor: pointer
 
     transition: transform .4s
 
@@ -33,6 +34,11 @@
     font-size: 1.4rem
     transform: rotate(-180deg)
     z-index: 10
+    cursor: pointer
+
+    &:disabled
+      opacity: .2
+      cursor: default
 
     &--next
       right: 0
