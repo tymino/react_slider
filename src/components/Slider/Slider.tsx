@@ -171,7 +171,11 @@ const Slider: FC<ISliderProps> = ({
       <div className="slider__window">
         <div
           className="slider__items"
-          style={{ transform: `translateX(${sliderOffset}px)` }}
+          style={{
+            transform: `translateX(${sliderOffset}px)`,
+            transition:
+              DirectionName.null === directionMove ? `transform .3s` : 'none',
+          }}
           ref={refItems}>
           {images.map((item, imdex) => (
             <div
